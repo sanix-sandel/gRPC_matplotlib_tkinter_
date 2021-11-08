@@ -59,9 +59,11 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
                 zr = protofile_pb2.zarray()
                 zr.z.extend(zarr)
                 response.z.extend([zr])
+            if i>0:
+                time.sleep(interval)
             yield response
+            print('Z sent to client')
             i+=1
-            time.sleep(2)
 
           #  yield response
            # time.sleep(interval)

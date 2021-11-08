@@ -55,6 +55,7 @@ def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
     for elt in a.y:
         i = [i for i in elt.y]
         Y.extend([i])
+
    # print(a)
     #print(Z)
 
@@ -145,7 +146,7 @@ class App:
             self.x_min_value, self.x_max_value, self.y_min_value,
             self.y_max_value, self.step_value, self.time_value
         )
-        print(X)
+       # print(X)
         #self.grpcThread.start()
         #time.sleep(2)
 
@@ -161,6 +162,7 @@ class App:
         #self.myThread.start()
         return self.line
 
+  #  def init(self):
 
 
 
