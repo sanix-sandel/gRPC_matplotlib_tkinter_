@@ -124,32 +124,39 @@ class App:
         # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.ani = None
-        self.grpcThread = threading.Thread(target=self.run)
-        #self.myThread = threading.Thread(target=self.animation)
+
+        #self.grpcThread = threading.Thread(target=self.run)
+        self.myThread = threading.Thread(target=self.animation)
 
 
 
         root.mainloop()
 
     def startDraw(self):
+        print('Initialization...')
         self.x_min_value=float(self.x_min.get())
         self.x_max_value=float(self.x_max.get())
         self.y_min_value=float(self.y_min.get())
         self.y_max_value=float(self.y_max.get())
         self.step_value=int(self.dt.get())
         self.time_value=int(self.w2.get())
+        self.w2.set(0)
+        rungrpc(
+            self.x_min_value, self.x_max_value, self.y_min_value,
+            self.y_max_value, self.step_value, self.time_value
+        )
+        print(X)
+        #self.grpcThread.start()
+        #time.sleep(2)
 
-
-        self.grpcThread.start()
         # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
         self.button1.destroy()
         self.canvas.get_tk_widget().pack(side=tk.RIGHT)
-        time.sleep(3)
         self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
-        print(self.X)
+       # print(self.X)
         self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                          cmap='winter', edgecolor='none')
-        self.animation()
+        #self.animation()
 
         #self.myThread.start()
         return self.line
@@ -164,6 +171,8 @@ class App:
 
     def animation(self):
         # time.sleep(2)
+        #while int(self.w2.get())<(self.time_value)+1:
+        #    self.w2.set(self.w2.get() + 1)
         print('Changing form')
         self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=1000, blit=False)
 
