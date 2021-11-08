@@ -62,7 +62,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
             if i>0:
                 time.sleep(interval)
             yield response
-            print('Z sent to client')
+            print('Z sent to client after ',interval, 'secs ')
             i+=1
 
           #  yield response

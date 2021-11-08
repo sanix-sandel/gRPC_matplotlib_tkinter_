@@ -55,29 +55,29 @@ def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
     for elt in a.y:
         i = [i for i in elt.y]
         Y.extend([i])
-
+    print(Z[0])
    # print(a)
     #print(Z)
 
 
 class App:
     def __init__(self):
-        root = tk.Tk()
-        root.title("Our GRPC")
-        canvas1 = tk.Canvas(root, width=300, height=600, bg='grey')
+        self.root = tk.Tk()
+        self.root.title("Our GRPC")
+        canvas1 = tk.Canvas(self.root, width=300, height=600, bg='grey')
 
         canvas1.pack()
 
-        label_x = tk.Label(root, text='X')
-        label_y = tk.Label(root, text='Y')
-        label_dt = tk.Label(root, text='Step')
+        label_x = tk.Label(self.root, text='X')
+        label_y = tk.Label(self.root, text='Y')
+        label_dt = tk.Label(self.root, text='Step')
 
-        self.x_min = tk.Entry(root, width=16)
-        self.x_max = tk.Entry(root, width=16)
-        self.y_min = tk.Entry(root, width=16)
-        self.y_max = tk.Entry(root, width=16)
+        self.x_min = tk.Entry(self.root, width=16)
+        self.x_max = tk.Entry(self.root, width=16)
+        self.y_min = tk.Entry(self.root, width=16)
+        self.y_max = tk.Entry(self.root, width=16)
         # z0 = tk.Entry (root,width=16)
-        self.dt = tk.Entry(root, width=16)
+        self.dt = tk.Entry(self.root, width=16)
 
 
         self.x_min_value=None
@@ -88,7 +88,7 @@ class App:
         self.time_value=None
 
 
-        self.w2 = Scale(root, from_=0, to=120, tickinterval=5,
+        self.w2 = Scale(self.root, from_=0, to=120, tickinterval=5,
                         orient=HORIZONTAL, label='Time (sec)',
                         activebackground='blue',
                         length=1000)
@@ -111,19 +111,16 @@ class App:
 
         self.line=None
 
-        self.button1 = tk.Button(text='Start', width=16, command=self.startDraw)
+        self.button1 = tk.Button(text='Start', width=16, command=self.startProcess)
         canvas1.create_window(100, 320, window=self.button1)
 
         self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111, projection='3d')
-        self.X, self.Y, self.Z = np.array([]), np.array([]), np.array([])
+        #self.ax = self.fig.add_subplot(111, projection='3d')
 
 
-        print(len(self.Z))
         print('Data Received')
-        self.canvas = FigureCanvasTkAgg(self.fig, master=root)
-        # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+       # self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
+        #self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.ani = None
 
         #self.grpcThread = threading.Thread(target=self.run)
@@ -131,7 +128,13 @@ class App:
 
 
 
-        root.mainloop()
+        self.root.mainloop()
+
+    def startProcess(self):
+        self.startDraw()
+        time.sleep(1)
+        self.myThread.start()
+        #self.animation()
 
     def startDraw(self):
         print('Initialization...')
@@ -146,59 +149,52 @@ class App:
             self.x_min_value, self.x_max_value, self.y_min_value,
             self.y_max_value, self.step_value, self.time_value
         )
-       # print(X)
-        #self.grpcThread.start()
-        #time.sleep(2)
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
 
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
         self.button1.destroy()
         self.canvas.get_tk_widget().pack(side=tk.RIGHT)
-        self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
-       # print(self.X)
+
         self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                          cmap='winter', edgecolor='none')
-        #self.animation()
-
         #self.myThread.start()
+        #self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=self.step_value*1000, blit=False)
+
         return self.line
 
-  #  def init(self):
-
-
-
-    def run(self):
-        print('Calling gRPC')
-        rungrpc(self.x_min_value, self.x_max_value, self.y_min_value,
-                                                  self.y_max_value, self.step_value, self.time_value)
-
     def animation(self):
-        # time.sleep(2)
-        #while int(self.w2.get())<(self.time_value)+1:
-        #    self.w2.set(self.w2.get() + 1)
+
         print('Changing form')
         self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=1000, blit=False)
 
     def data(self, i, z, line):
-        print("Looking for new data")
+        print('Checking new data from the server')
         try:
-
-            self.Z = np.array(Z)
-            self.ax.clear()
-            print(len(self.Z))
-            self.X = X
-            self.Y = Y
-            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, cmap='summer')
-            print('Data received')
-
+            a = next(parts)
+            X,Y,Z=[],[],[]
+            for elt in a.z:
+                i = [i for i in elt.z]
+                Z.extend([i])
+            for elt in a.x:
+                i = [i for i in elt.x]
+                X.extend([i])
+            for elt in a.y:
+                i = [i for i in elt.y]
+                Y.extend([i])
+            self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
+            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                             cmap='winter', edgecolor='none')
             return self.line
         except:
-            # self.ax.clear()
-            print(len(self.Z))
-            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, cmap='spring')
-            print('Data not received yet, Waiting ')
+            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                             cmap='winter', edgecolor='none')
             return self.line
-        # finally:
-        #    return self.line,
+
+
 
 
 if __name__ == '__main__':
