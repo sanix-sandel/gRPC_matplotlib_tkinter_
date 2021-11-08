@@ -1,0 +1,33 @@
+syntax="proto3";
+
+
+message DataRequest{
+  double x_min=1;
+  double x_max=2;
+  double y_min=3;
+  double y_max=4;
+  int64 time=5;
+  int64 steps=6;
+
+}
+
+message xarray{
+  repeated double x=1;
+}
+message yarray{
+    repeated double y=1;
+}
+message zarray{
+    repeated double z=1;
+}
+
+
+message DataResponse{
+  repeated xarray x=1;
+  repeated yarray y=2;
+  repeated zarray z=3;
+}
+
+service ComputeFunction{
+  rpc compute(DataRequest)returns (stream DataResponse);
+}
