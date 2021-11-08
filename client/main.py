@@ -23,8 +23,8 @@ Z = []
 parts = None
 
 
-def rungrpc(mytime, steps, x_min, x_max, y_min, y_max):
-    print('Yeah !')
+def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
+    print('Yeah ! Connecting to the server baby !')
     global Z
     global parts
     channel = grpc.insecure_channel("localhost:5000")
@@ -56,14 +56,14 @@ def rungrpc(mytime, steps, x_min, x_max, y_min, y_max):
         i = [i for i in elt.y]
         Y.extend([i])
    # print(a)
-    print(Z)
+    #print(Z)
 
 
 class App:
     def __init__(self):
         root = tk.Tk()
         root.title("Our GRPC")
-        canvas1 = tk.Canvas(root, width=300, height=600, bg='blue')
+        canvas1 = tk.Canvas(root, width=300, height=600, bg='grey')
 
         canvas1.pack()
 
@@ -71,80 +71,104 @@ class App:
         label_y = tk.Label(root, text='Y')
         label_dt = tk.Label(root, text='Step')
 
-        x_min = tk.Entry(root, width=16)
-        x_max = tk.Entry(root, width=16)
-        y_min = tk.Entry(root, width=16)
-        y_max = tk.Entry(root, width=16)
+        self.x_min = tk.Entry(root, width=16)
+        self.x_max = tk.Entry(root, width=16)
+        self.y_min = tk.Entry(root, width=16)
+        self.y_max = tk.Entry(root, width=16)
         # z0 = tk.Entry (root,width=16)
-        dt = tk.Entry(root, width=16)
+        self.dt = tk.Entry(root, width=16)
+
+
+        self.x_min_value=None
+        self.x_max_value=None
+        self.y_min_value=None
+        self.y_max_value=None
+        self.step_value=None
+        self.time_value=None
+
 
         self.w2 = Scale(root, from_=0, to=120, tickinterval=5,
                         orient=HORIZONTAL, label='Time (sec)',
                         activebackground='blue',
                         length=1000)
-        self.w2.set(0)
+        #self.w2.set(0)
         self.w2.pack()
 
         canvas1.create_window(20, 160, window=label_x)
-        canvas1.create_window(100, 160, window=x_min)
-        canvas1.create_window(210, 160, window=x_max)
+        canvas1.create_window(100, 160, window=self.x_min)
+        canvas1.create_window(210, 160, window=self.x_max)
         canvas1.create_window(20, 200, window=label_y)
-        canvas1.create_window(100, 200, window=y_min)
-        canvas1.create_window(210, 200, window=y_max)
+        canvas1.create_window(100, 200, window=self.y_min)
+        canvas1.create_window(210, 200, window=self.y_max)
         # canvas1.create_window(100, 240, window=z0)
         canvas1.create_window(20, 240, window=label_dt)
-        canvas1.create_window(100, 240, window=dt)
+        canvas1.create_window(100, 240, window=self.dt)
         button1 = tk.Button(text='Start', width=16)
         canvas1.create_window(100, 320, window=button1)
         # canvas1.create_rectangle(200, 100, 700, 500, fill="RED")
-
         canvas1.pack(side=tk.LEFT)
 
-        def startDraw():
-            print(x_min.get())
-            # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
-            self.canvas.get_tk_widget().pack(side=tk.RIGHT)
+        self.line=None
 
-        button1 = tk.Button(text='Start', width=16, command=startDraw)
-        canvas1.create_window(100, 320, window=button1)
-
+        self.button1 = tk.Button(text='Start', width=16, command=self.startDraw)
+        canvas1.create_window(100, 320, window=self.button1)
 
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(111, projection='3d')
+        self.X, self.Y, self.Z = np.array([]), np.array([]), np.array([])
 
-        grpcThread = threading.Thread(target=self.run)
-        grpcThread.start()
-        time.sleep(2)
 
-        self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
-        self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
-                                         cmap='winter', edgecolor='none')
         print(len(self.Z))
         print('Data Received')
         self.canvas = FigureCanvasTkAgg(self.fig, master=root)
         # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.ani = None
+        self.grpcThread = threading.Thread(target=self.run)
+        #self.myThread = threading.Thread(target=self.animation)
 
-        myThread = threading.Thread(target=self.animation)
-        myThread.start()
+
 
         root.mainloop()
 
+    def startDraw(self):
+        self.x_min_value=float(self.x_min.get())
+        self.x_max_value=float(self.x_max.get())
+        self.y_min_value=float(self.y_min.get())
+        self.y_max_value=float(self.y_max.get())
+        self.step_value=int(self.dt.get())
+        self.time_value=int(self.w2.get())
+
+
+        self.grpcThread.start()
+        # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
+        self.button1.destroy()
+        self.canvas.get_tk_widget().pack(side=tk.RIGHT)
+        time.sleep(3)
+        self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
+        print(self.X)
+        self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                         cmap='winter', edgecolor='none')
+        self.animation()
+
+        #self.myThread.start()
+        return self.line
+
+
+
+
     def run(self):
         print('Calling gRPC')
-        rungrpc(10, 10, -6, 6, -6, 6)
+        rungrpc(self.x_min_value, self.x_max_value, self.y_min_value,
+                                                  self.y_max_value, self.step_value, self.time_value)
 
     def animation(self):
         # time.sleep(2)
+        print('Changing form')
         self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=1000, blit=False)
 
     def data(self, i, z, line):
-        # z = np.sin(x+y+i)
-        # print('Checking for new data from the server :) ')
-        # print('The length of Z: ',len(Z))
-        time.sleep(4)
-        # self.Z = np.cos(self.X) * np.sin(self.Y)
+        print("Looking for new data")
         try:
 
             self.Z = np.array(Z)

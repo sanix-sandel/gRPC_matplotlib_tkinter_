@@ -22,12 +22,12 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
 
     def compute(self, request, context):
         print('Server called')
-      #  print("Time :",request.time)
-      #  print("Steps :", request.steps)
-      #  print("x_min :", request.x_min)
-      #  print("x_max :", request.x_max)
-      #  print("y_min :", request.y_min)
-      #  print("y_max :", request.y_max)
+        print("Time :",request.time)
+        print("Steps :", request.steps)
+        print("x_min :", request.x_min)
+        print("x_max :", request.x_max)
+        print("y_min :", request.y_min)
+        print("y_max :", request.y_max)
         x=np.linspace(request.x_min, request.x_max, 120)
         y=np.linspace(request.y_min, request.y_max, 120)
 
@@ -42,9 +42,6 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
 
         z = z.tolist()
 
-        print(x)
-        print(y)
-        print(z)
 
         i=0
         while i<request.steps:
@@ -64,6 +61,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
                 response.z.extend([zr])
             yield response
             i+=1
+            time.sleep(2)
 
           #  yield response
            # time.sleep(interval)
