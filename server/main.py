@@ -21,7 +21,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
         return np.cos(X) * np.sin(Y)
 
     def compute(self, request, context):
-        print('Server called')
+        print('Server called, Data received from client :')
         print("Time :",request.time)
         print("Steps :", request.steps)
         print("x_min :", request.x_min)
@@ -32,6 +32,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
         y=np.linspace(request.y_min, request.y_max, 120)
 
         interval = int(request.time / request.steps)
+        steps=request.steps
 
         self.X, self.Y = np.meshgrid(x,y)
 
@@ -43,26 +44,27 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
         z = z.tolist()
 
 
-        i=0
-        while i<request.steps:
+        i=1
+        while i<=request.steps:
             response = protofile_pb2.DataResponse()
 
-            for xarr in x:
+            for xarr in x[:int(120*i/steps)]:
                 xr = protofile_pb2.xarray()
-                xr.x.extend(xarr)
+                xr.x.extend(xarr[:int(120*i/steps)])
                 response.x.extend([xr])
-            for yarr in y:
+
+            for yarr in y[:int(120*i/steps)]:
                 yr = protofile_pb2.yarray()
-                yr.y.extend(yarr)
+                yr.y.extend(yarr[:int(120*i/steps)])
                 response.y.extend([yr])
-            for zarr in z:
+            for zarr in z[:int(120*i/steps)]:
                 zr = protofile_pb2.zarray()
-                zr.z.extend(zarr)
+                zr.z.extend(zarr[:int(120*i/steps)])
                 response.z.extend([zr])
             if i>0:
                 time.sleep(interval)
             yield response
-            print('Z sent to client after ',interval, 'secs ')
+            print('Z ', i,'sent to client after ',interval, 'secs ')
             i+=1
 
           #  yield response

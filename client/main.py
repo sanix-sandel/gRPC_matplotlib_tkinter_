@@ -169,9 +169,11 @@ class App:
     def animation(self):
 
         print('Changing form')
-        self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=1000, blit=False)
+        self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=self.step_value*1000, blit=False)
 
     def data(self, i, z, line):
+
+        self.w2.set(self.w2.get()+self.step_value)
         print('Checking new data from the server')
         try:
             a = next(parts)
