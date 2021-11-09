@@ -115,15 +115,9 @@ class App:
         canvas1.create_window(100, 320, window=self.button1)
 
         self.fig = plt.figure()
-        #self.ax = self.fig.add_subplot(111, projection='3d')
 
-
-        print('Data Received')
-       # self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
-        #self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.ani = None
 
-        #self.grpcThread = threading.Thread(target=self.run)
         self.myThread = threading.Thread(target=self.animation)
 
 
@@ -161,14 +155,9 @@ class App:
 
         self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                          cmap='winter', edgecolor='none')
-        #self.myThread.start()
-        #self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=self.step_value*1000, blit=False)
-
         return self.line
 
     def animation(self):
-
-        print('Changing form')
         self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=self.step_value*1000, blit=False)
 
     def data(self, i, z, line):
