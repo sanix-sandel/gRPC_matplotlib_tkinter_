@@ -120,8 +120,6 @@ class App:
 
         self.myThread = threading.Thread(target=self.animation)
 
-
-
         self.root.mainloop()
 
     def startProcess(self):
@@ -162,7 +160,7 @@ class App:
 
     def data(self, i, z, line):
 
-        self.w2.set(self.w2.get()+self.step_value)
+        self.w2.set(self.w2.get()+self.step_value if self.w2.get()!=self.time_value else self.w2.get())
         print('Checking new data from the server')
         try:
             a = next(parts)
@@ -184,8 +182,6 @@ class App:
             self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                              cmap='winter', edgecolor='none')
             return self.line
-
-
 
 
 if __name__ == '__main__':

@@ -40,7 +40,6 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
 
         x = self.X.tolist()
         y = self.Y.tolist()
-
         z = z.tolist()
 
 
@@ -67,11 +66,6 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
             print('Z ', i,'sent to client after ',interval, 'secs ')
             i+=1
 
-          #  yield response
-           # time.sleep(interval)
-           # i+=1
-
-
 
 
 # Create a server
@@ -89,14 +83,4 @@ try:
         time.sleep(86400)
 except:
     server.stop(0)
-
-
-
-#while i<steps:
-    #i+=1
-#interval =int(time/steps)
-#time.sleep(interval)
-
-
-#
 
