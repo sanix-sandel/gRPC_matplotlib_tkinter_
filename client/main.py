@@ -21,10 +21,12 @@ X = []
 Y = []
 Z = []
 parts = None
+storedData=[]
 
 
 def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
     print('Yeah ! Connecting to the server baby !')
+    global storedData
     global Z
     global parts
     channel = grpc.insecure_channel("localhost:5000")
@@ -55,6 +57,15 @@ def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
     for elt in a.y:
         i = [i for i in elt.y]
         Y.extend([i])
+
+    ### storing data
+    data=[]
+    data.append(X)
+    data.append(Y)
+    data.append(Z)
+    storedData.append(data)
+
+
     print(Z[0])
    # print(a)
     #print(Z)
@@ -118,7 +129,7 @@ class App:
 
         self.ani = None
 
-        self.myThread = threading.Thread(target=self.animation)
+        self.myThread = threading.Thread(target=self.animation, daemon=True)
 
         self.root.mainloop()
 
@@ -126,7 +137,7 @@ class App:
         self.startDraw()
         time.sleep(1)
         self.myThread.start()
-        #self.animation()
+        ##self.animation()
 
     def startDraw(self):
         print('Initialization...')
