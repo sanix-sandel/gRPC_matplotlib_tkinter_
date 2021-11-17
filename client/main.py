@@ -67,7 +67,7 @@ def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
     storedData.append(data)
 
 
-    print(Z[0])
+   # print(Z[0])
    # print(a)
     #print(Z)
 
@@ -128,6 +128,10 @@ class App:
                         orient=HORIZONTAL, label='Time (sec)',
                         activebackground='blue',
                         length=1000)
+        self.w2.bind("<ButtonRelease-1>", self.updateValue)
+
+
+
         #self.w2.set(0)
         self.w2.pack()
 
@@ -230,6 +234,8 @@ class App:
                                              cmap='winter', edgecolor='none')
             return self.line
 
+    def updateValue(self, event):
+        print(self.w2.get())
 
 if __name__ == '__main__':
     app = App()
