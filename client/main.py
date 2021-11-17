@@ -1,3 +1,4 @@
+import ctypes
 import sys
 import threading
 
@@ -21,7 +22,7 @@ X = []
 Y = []
 Z = []
 parts = None
-storedData=[]
+storedData = []
 
 
 def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
@@ -70,6 +71,29 @@ def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
    # print(a)
     #print(Z)
 
+class MyThread(threading.Thread):
+    def __init__(self, name):
+        threading.Thread.__init__(self)
+        self.name=name
+
+    def run(self) -> None:
+        print('Thread started tarted running ')
+
+    def get_id(self):
+        if hasattr(self, '_thread_id'):
+            return self._thread_id
+        for id, thread in threading._active.items():
+            if thread is self:
+                return id
+
+    def raise_exception(self):
+        thread_id=self.get_id()
+        res=ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, ctypes.py_object(SystemExit))
+        if res>1:
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
+            print('Thread to be stopped')
+
+
 
 class App:
     def __init__(self):
@@ -97,6 +121,7 @@ class App:
         self.y_max_value=None
         self.step_value=None
         self.time_value=None
+        self.interval=None
 
 
         self.w2 = Scale(self.root, from_=0, to=120, tickinterval=5,
@@ -115,9 +140,9 @@ class App:
         # canvas1.create_window(100, 240, window=z0)
         canvas1.create_window(20, 240, window=label_dt)
         canvas1.create_window(100, 240, window=self.dt)
-        button1 = tk.Button(text='Start', width=16)
-        canvas1.create_window(100, 320, window=button1)
-        # canvas1.create_rectangle(200, 100, 700, 500, fill="RED")
+        #button1 = tk.Button(text='Start', width=16)
+        #canvas1.create_window(100, 320, window=button1)
+
         canvas1.pack(side=tk.LEFT)
 
         self.line=None
@@ -147,6 +172,7 @@ class App:
         self.y_max_value=float(self.y_max.get())
         self.step_value=int(self.dt.get())
         self.time_value=int(self.w2.get())
+        self.interval=int(self.time_value/self.step_value)
         self.w2.set(0)
         rungrpc(
             self.x_min_value, self.x_max_value, self.y_min_value,
@@ -167,11 +193,16 @@ class App:
         return self.line
 
     def animation(self):
-        self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=self.step_value*1000, blit=False)
+        self.ani = animation.FuncAnimation(self.fig, self.data, fargs=(self.Z, self.line), interval=self.interval*1000, blit=False)
+
 
     def data(self, i, z, line):
 
-        self.w2.set(self.w2.get()+self.step_value if self.w2.get()!=self.time_value else self.w2.get())
+        self.w2.set(self.w2.get()+self.interval if self.w2.get()!=self.time_value else self.w2.get())
+        if (self.w2.get()>=self.time_value):
+            print("!!! No more data from the server. Animation to be stopped. !!!")
+            self.ani.event_source.stop()
+            print(len(storedData))
         print('Checking new data from the server')
         try:
             a = next(parts)
@@ -185,6 +216,11 @@ class App:
             for elt in a.y:
                 i = [i for i in elt.y]
                 Y.extend([i])
+            data = []
+            data.append(X)
+            data.append(Y)
+            data.append(Z)
+            storedData.append(data)
             self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
             self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                              cmap='winter', edgecolor='none')
