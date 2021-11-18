@@ -1,18 +1,15 @@
-import ctypes
-import sys
 import threading
-
 import tkinter as tk
 from tkinter import *
-import grpc
-from mpl_toolkits import mplot3d
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib;
 
-import protofile_pb2, protofile_pb2_grpc
+import grpc
+import matplotlib;
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+
+import protofile_pb2
+import protofile_pb2_grpc
 
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -71,29 +68,6 @@ def rungrpc( x_min, x_max, y_min, y_max, steps, mytime):
    # print(a)
     #print(Z)
 
-class MyThread(threading.Thread):
-    def __init__(self, name):
-        threading.Thread.__init__(self)
-        self.name=name
-
-    def run(self) -> None:
-        print('Thread started tarted running ')
-
-    def get_id(self):
-        if hasattr(self, '_thread_id'):
-            return self._thread_id
-        for id, thread in threading._active.items():
-            if thread is self:
-                return id
-
-    def raise_exception(self):
-        thread_id=self.get_id()
-        res=ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, ctypes.py_object(SystemExit))
-        if res>1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            print('Thread to be stopped')
-
-
 
 class App:
     def __init__(self):
@@ -101,6 +75,7 @@ class App:
         self.root.title("Our GRPC")
         self.ax=None
         self.canvas=None
+        self.time_array=[]##
         canvas1 = tk.Canvas(self.root, width=300, height=600, bg='grey')
 
         canvas1.pack()
@@ -206,10 +181,12 @@ class App:
     def data(self, i, z, line):
 
         self.w2.set(self.w2.get()+self.interval if self.w2.get()!=self.time_value else self.w2.get())
+        time=[i for i in range(self.w2.get()-self.interval+1, self.w2.get()+1)]
+        self.time_array.append(time)
         if (self.w2.get()>=self.time_value):
             print("!!! No more data from the server. Animation to be stopped. !!!")
             self.ani.event_source.stop()
-            print(len(storedData))
+            #print(self.time_array)
             self.w2.bind("<ButtonRelease-1>", self.updateValue)
 
         print('Checking new data from the server')
@@ -239,20 +216,26 @@ class App:
                                              cmap='winter', edgecolor='none')
             return self.line
 
+
     def updateValue(self, event):
-        print(self.w2.get())
+        i=None
+        index=int(self.w2.get())
+        for arr in self.time_array:
+            if index in arr:
+                i=self.time_array.index(arr)
+                break
+        if i==None:
+            i=0
         self.ax.clear()
         self.canvas.get_tk_widget().destroy()
         self.ax = self.fig.add_subplot(111, projection='3d')
         self.canvas=FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.NONE, expand=1)
-        #self.canvas.get_tk_widget().pack()
 
-        self.X, self.Y, self.Z = np.array(storedData[0][0]), np.array(storedData[0][1]), np.array(storedData[0][2])
+        self.X, self.Y, self.Z = np.array(storedData[i][0]), np.array(storedData[i][1]), np.array(storedData[i][2])
         self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                         cmap='winter', edgecolor='none')
 
-        print(self.ax)
         return self.line,
 
 
