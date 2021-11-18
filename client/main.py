@@ -226,17 +226,24 @@ class App:
                 break
         if i==None:
             i=0
+
         self.ax.clear()
         self.canvas.get_tk_widget().destroy()
         self.ax = self.fig.add_subplot(111, projection='3d')
         self.canvas=FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.NONE, expand=1)
+        try:
+            self.X, self.Y, self.Z = np.array(storedData[i][0]), np.array(storedData[i][1]), np.array(storedData[i][2])
+            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                            cmap='winter', edgecolor='none')
 
-        self.X, self.Y, self.Z = np.array(storedData[i][0]), np.array(storedData[i][1]), np.array(storedData[i][2])
-        self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
-                                        cmap='winter', edgecolor='none')
+            return self.line,
+        except:
+            self.X, self.Y, self.Z = np.array(storedData[self.step_value-1][0]), np.array(storedData[self.step_value-1][1]), np.array(storedData[self.step_value-1][2])
+            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                             cmap='winter', edgecolor='none')
 
-        return self.line,
+            return self.line,
 
 
 if __name__ == '__main__':
