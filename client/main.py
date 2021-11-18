@@ -188,33 +188,33 @@ class App:
             self.ani.event_source.stop()
             #print(self.time_array)
             self.w2.bind("<ButtonRelease-1>", self.updateValue)
-
-        print('Checking new data from the server')
-        try:
-            a = next(parts)
-            X,Y,Z=[],[],[]
-            for elt in a.z:
-                i = [i for i in elt.z]
-                Z.extend([i])
-            for elt in a.x:
-                i = [i for i in elt.x]
-                X.extend([i])
-            for elt in a.y:
-                i = [i for i in elt.y]
-                Y.extend([i])
-            data = []
-            data.append(X)
-            data.append(Y)
-            data.append(Z)
-            storedData.append(data)
-            self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
-            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
-                                             cmap='winter', edgecolor='none')
-            return self.line
-        except:
-            self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
-                                             cmap='winter', edgecolor='none')
-            return self.line
+        else:
+            print('Checking new data from the server')
+            try:
+                a = next(parts)
+                X,Y,Z=[],[],[]
+                for elt in a.z:
+                    i = [i for i in elt.z]
+                    Z.extend([i])
+                for elt in a.x:
+                    i = [i for i in elt.x]
+                    X.extend([i])
+                for elt in a.y:
+                    i = [i for i in elt.y]
+                    Y.extend([i])
+                data = []
+                data.append(X)
+                data.append(Y)
+                data.append(Z)
+                storedData.append(data)
+                self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
+                self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                                 cmap='winter', edgecolor='none')
+                return self.line
+            except:
+                self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                                 cmap='winter', edgecolor='none')
+                return self.line
 
 
     def updateValue(self, event):
