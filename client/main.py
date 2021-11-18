@@ -99,6 +99,8 @@ class App:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Our GRPC")
+        self.ax=None
+        self.canvas=None
         canvas1 = tk.Canvas(self.root, width=300, height=600, bg='grey')
 
         canvas1.pack()
@@ -128,7 +130,6 @@ class App:
                         orient=HORIZONTAL, label='Time (sec)',
                         activebackground='blue',
                         length=1000)
-        self.w2.bind("<ButtonRelease-1>", self.updateValue)
 
 
 
@@ -155,6 +156,7 @@ class App:
         canvas1.create_window(100, 320, window=self.button1)
 
         self.fig = plt.figure()
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
 
         self.ani = None
 
@@ -185,12 +187,13 @@ class App:
         self.ax = self.fig.add_subplot(111, projection='3d')
         self.X, self.Y, self.Z = np.array(X), np.array(Y), np.array(Z)
 
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         # self.canvas.get_tk_widget().create_rectangle(200, 100, 700, 500, fill="BLUE")
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
+
         self.button1.destroy()
-        self.canvas.get_tk_widget().pack(side=tk.RIGHT)
+        #self.canvas.get_tk_widget().pack(side=tk.RIGHT)
+
 
         self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                          cmap='winter', edgecolor='none')
@@ -207,6 +210,8 @@ class App:
             print("!!! No more data from the server. Animation to be stopped. !!!")
             self.ani.event_source.stop()
             print(len(storedData))
+            self.w2.bind("<ButtonRelease-1>", self.updateValue)
+
         print('Checking new data from the server')
         try:
             a = next(parts)
@@ -236,6 +241,20 @@ class App:
 
     def updateValue(self, event):
         print(self.w2.get())
+        self.ax.clear()
+        self.canvas.get_tk_widget().destroy()
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        self.canvas=FigureCanvasTkAgg(self.fig, master=self.root)
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.NONE, expand=1)
+        #self.canvas.get_tk_widget().pack()
+
+        self.X, self.Y, self.Z = np.array(storedData[0][0]), np.array(storedData[0][1]), np.array(storedData[0][2])
+        self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
+                                        cmap='winter', edgecolor='none')
+
+        print(self.ax)
+        return self.line,
+
 
 if __name__ == '__main__':
     app = App()
