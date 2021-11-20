@@ -154,7 +154,9 @@ class App:
         self.step_value=int(self.dt.get())
         self.time_value=int(self.w2.get())
         self.interval=int(self.time_value/self.step_value)
+
         self.w2.set(0)
+
         rungrpc(
             self.x_min_value, self.x_max_value, self.y_min_value,
             self.y_max_value, self.step_value, self.time_value
@@ -220,12 +222,15 @@ class App:
     def updateValue(self, event):
         i=None
         index=int(self.w2.get())
+
         for arr in self.time_array:
             if index in arr:
                 i=self.time_array.index(arr)
                 break
-        if i==None:
+        if index==0:
             i=0
+        #if i==None:
+        #    i=0
 
         self.ax.clear()
         self.canvas.get_tk_widget().destroy()
@@ -239,6 +244,7 @@ class App:
 
             return self.line,
         except:
+            #self.X, self.Y, self.Z=np.array([0]),np.array([0]),np.array([0])
             self.X, self.Y, self.Z = np.array(storedData[self.step_value-1][0]), np.array(storedData[self.step_value-1][1]), np.array(storedData[self.step_value-1][2])
             self.line = self.ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1,
                                              cmap='winter', edgecolor='none')
