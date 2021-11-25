@@ -4,7 +4,7 @@ import grpc
 import time
 import numpy as np
 
-
+#The server
 import protofile_pb2
 import protofile_pb2_grpc
 
@@ -17,9 +17,13 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
     def __init__(self):
         pass
 
+    #function to compute z with data from request sent by client
     def z_function(self, X, Y):
+        #here our function z=cos(x).sin(y)
         return np.cos(X) * np.sin(Y)
 
+    #The role of this function is to return z to the client,
+    #rememebr it's the function prior definded in the protofile
     def compute(self, request, context):
         print('Server called, Data received from client :')
         print("Time :",request.time)
@@ -31,6 +35,8 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
         x=np.linspace(request.x_min, request.x_max, 120)
         y=np.linspace(request.y_min, request.y_max, 120)
 
+        #We compute the interval of time
+        #p.s after how many seconds the server must return new data
         interval = int(request.time / request.steps)
         steps=request.steps
 
@@ -44,6 +50,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
 
 
         i=1
+        #we send data as server-streaming depending on steps sent by client
         while i<=request.steps:
             response = protofile_pb2.DataResponse()
 
@@ -62,6 +69,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
                 response.z.extend([zr])
             if i>0:
                 time.sleep(interval)
+            #The response is sent as a generator (generator in python is an iterator that's consumed only once)
             yield response
             print('Z ', i,'sent to client after ',interval, 'secs ')
             i+=1
@@ -75,7 +83,9 @@ protofile_pb2_grpc.add_ComputeFunctionServicer_to_server(ComputeFunctionServicer
 
 print('Starting server. Listening on port 5000 - Streaming ')
 
+#We attribute the port to the server
 server.add_insecure_port('[::]:5000')
+#We start the server
 server.start()
 
 try:
