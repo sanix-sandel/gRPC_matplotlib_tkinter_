@@ -21,7 +21,7 @@ Y = []
 Z = []
 parts = None
 #storeData will store all data from the server,
-# #so that we can go back and fourth
+# #so that we can go back and forth
 storedData = []
 
 
