@@ -18,9 +18,9 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
         pass
 
     #function to compute z with data from request sent by client
-    def z_function(self, X, Y):
+    def z_function(self, X, Y, t):
         #here our function z=cos(x).sin(y)
-        return np.cos(X) * np.sin(Y)
+        return np.cos(X) * np.sin(Y)+t*np.cos(X)
 
     #The role of this function is to return z to the client,
     #rememebr it's the function prior definded in the protofile
@@ -35,6 +35,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
         x=np.linspace(request.x_min, request.x_max, 120)
         y=np.linspace(request.y_min, request.y_max, 120)
 
+
         #We compute the interval of time
         #p.s after how many seconds the server must return new data
         interval = int(request.time / request.steps)
@@ -42,17 +43,16 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
 
         self.X, self.Y = np.meshgrid(x,y)
 
-        z = self.z_function(self.X, self.Y)
-
-        x = self.X.tolist()
-        y = self.Y.tolist()
-        z = z.tolist()
-
 
         i=1
         #we send data as server-streaming depending on steps sent by client
         while i<=request.steps:
             response = protofile_pb2.DataResponse()
+            z = self.z_function(self.X, self.Y, i*interval)
+            x = self.X.tolist()
+            y = self.Y.tolist()
+            z = z.tolist()
+
 
             for xarr in x[:int(120*i/steps)]:
                 xr = protofile_pb2.xarray()
@@ -63,6 +63,7 @@ class ComputeFunctionServicer(protofile_pb2_grpc.ComputeFunctionServicer):
                 yr = protofile_pb2.yarray()
                 yr.y.extend(yarr[:int(120*i/steps)])
                 response.y.extend([yr])
+
             for zarr in z[:int(120*i/steps)]:
                 zr = protofile_pb2.zarray()
                 zr.z.extend(zarr[:int(120*i/steps)])
