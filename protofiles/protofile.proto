@@ -1,6 +1,6 @@
 syntax="proto3";
 
-
+//Defining the request structure
 message DataRequest{
   double x_min=1;
   double x_max=2;
@@ -21,13 +21,14 @@ message zarray{
     repeated double z=1;
 }
 
-
+//The response structure
 message DataResponse{
   repeated xarray x=1;
   repeated yarray y=2;
   repeated zarray z=3;
 }
-
+//the service and its function
+//this function will be implemented in both server and client
 service ComputeFunction{
   rpc compute(DataRequest)returns (stream DataResponse);
 }
